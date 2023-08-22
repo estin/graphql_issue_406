@@ -1,0 +1,47 @@
+version: "2.1"
+
+networks:
+    demo:
+
+services:
+
+    etcd:
+      image: 'bitnami/etcd:latest'
+      environment:
+        - ALLOW_NONE_AUTHENTICATION=yes
+        - ETCD_ADVERTISE_CLIENT_URLS=http://etcd:2379
+      ports:
+        - 2379:2379
+        - 2380:2380
+      networks:
+        - demo
+
+    spilo1: &spilo
+        build: spilo-14-graphql
+        networks: [ demo ]
+        environment:
+            SPILO_PROVIDER: 'local'
+            ETCDCTL_ENDPOINTS: http://etcd:2379
+            ETCD3_HOST: "etcd:2379"
+            SCOPE: demo
+            SPILO_CONFIGURATION: |
+              bootstrap:
+                dcs:
+                  loop_wait: 2
+                  postgresql:
+                    parameters:
+                      wal_keep_segments: 8
+              postgresql:
+                parameters:
+                  shared_buffers: 32MB
+                  log_destination: "stderr"
+                  logging_collector: "false"
+            PGVERSION: '14'
+        hostname: spilo1
+        container_name: demo-spilo1
+
+    spilo2:
+        <<: *spilo
+        hostname: spilo2
+        container_name: demo-spilo2
+
