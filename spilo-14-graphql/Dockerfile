@@ -1,7 +1,7 @@
 FROM registry.opensource.zalan.do/acid/spilo-14:2.1-p3 as builder
 
 RUN apt-get update -qq
-RUN apt-get install -yqq pkg-config libssl-dev libclang-dev postgresql-server-dev-14 zlib1g-dev libreadline6-dev curl build-essential 
+RUN apt-get install -yqq pkg-config libssl-dev libclang-dev postgresql-server-dev-14 zlib1g-dev libreadline6-dev curl build-essential git
 
 # install rust
 RUN useradd -ms /bin/bash graphql
@@ -14,9 +14,10 @@ RUN cargo install cargo-pgrx --version 0.9.8 --locked
 RUN cargo pgrx init --pg14=/usr/lib/postgresql/14/bin/pg_config
 
 WORKDIR /home/graphql
-RUN curl -L https://github.com/supabase/pg_graphql/archive/refs/tags/v1.3.0.tar.gz -o pg_graphql.tar.gz && \
-  tar xzf pg_graphql.tar.gz && \
-  cd pg_graphql-1.3.0
+# RUN curl -L https://github.com/supabase/pg_graphql/archive/refs/tags/v1.3.0.tar.gz -o pg_graphql.tar.gz && \
+#  tar xzf pg_graphql.tar.gz && \
+#  cd pg_graphql-1.3.0
+RUN git clone https://github.com/imor/pg_graphql.git pg_graphql-1.3.0 && cd pg_graphql-1.3.0 && git checkout fix/406
 
 WORKDIR /home/graphql/pg_graphql-1.3.0
 RUN cargo pgrx package
